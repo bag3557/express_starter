@@ -1,34 +1,33 @@
 const express = require('express');
 const path = require('path');
-const members = require('./routes/api/members');
+const exphbs = require('express-handlebars');
+
 const logger = require('./middleware/logger')
+// const router = require('./routes/api/members')
 const app = express();
+
+// Hanldebars middleware
+app.engine('handlebars', exphbs({
+  defaultLayout: 'mail'
+}));
+app.set('view engine', 'handlebars')
 
 // Init middleware
 // app.use(logger);
 
-// Gets all members
-app.get('/api/members', (req, res) => res.json(members))
-
-// Get single member
-app.get('/api/members/:id', (req, res) => {
-  const found = members.some(member => member.id === parseInt(req.params.id))
-
-  // res.send(req.params.id)
-  if (found) {
-    res.json(members.filter(member => member.id === parseInt(req.params.id)))
-  } else {
-    res.status(400).json({
-      msg: `No member with if: ${req.params.id}`
-    })
-  }
-})
+// Body parser middleware
+app.use(express.json())
+app.use(express.urlencoded({
+  extended: false
+}))
 
 // Set static folder
 app.use(express.static(path.join(__dirname, 'public')))
 
+// Members API route
+app.use('/api/members/', require('./routes/api/members'))
 // app.get('/', (req, res) => {
-//   res.sendFile(path.join(__dirname, 'public', 'index.html'))
+//    res.sendFile(path.join(__dirname, 'public', 'index.html'))
 // })
 
 const PORT = process.env.PORT || 5000
